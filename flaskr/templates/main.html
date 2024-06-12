@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        socket = io();
+        socket.connect('http://127.0.0.1:5000/');
+        socket.on('connect',function(){
+            socket.send('a');
+        })
+        socket.on('message', function(msg){
+            console.log(msg);
+            socket.send('a');
+        })
+
+    </script>
+</head>
+<body>
+<h1>Hello world </h1>
+</body>
+</html>
