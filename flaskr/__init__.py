@@ -12,6 +12,7 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
+    socket = SocketIO(app)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -27,9 +28,16 @@ def create_app(test_config=None):
         pass
 
 
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
+    @app.route("/main")
+    def main():
+        return render_template("main.html")
+
+    @socket.on('message')
+    def handle_message(msg):
+        socket.send("test")
+
+
+    if __name__ == "__main__":
+        socket.run(app)
 
     return app
