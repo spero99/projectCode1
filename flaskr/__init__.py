@@ -1,8 +1,7 @@
 import os
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, send , emit
 
 from flask import Flask, render_template
-
 
 
 def create_app(test_config=None):
@@ -28,7 +27,7 @@ def create_app(test_config=None):
         pass
 
 
-    @app.route("/main")
+    @app.route("/")
     def main():
         return render_template("main.html")
 
@@ -36,6 +35,14 @@ def create_app(test_config=None):
     def handle_message(msg):
         socket.send("test")
 
+
+    @socket.on('receive_file')
+    def handle_file(file):
+        socket.send("testfile")
+
+    @socket.on('receive_json')
+    def handle_the_json(json):
+        print('received json: ' + str(json))
 
     if __name__ == "__main__":
         socket.run(app)

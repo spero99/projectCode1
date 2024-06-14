@@ -14,11 +14,22 @@
             console.log(msg);
 
         })
+        socket.on('send_file', function(file){
+            console.log('sending_file');
+        })
 
     </script>
 </head>
 <body>
 <h1>Hello world main
 </h1>
+<?PHP
+echo shell_exec("python proxeiro.py 'parameter1' ");
+?>
+<form method="post">
+  <label for="file">File</label>
+  <input id="file" name="file" type="file" />
+  <button>Upload</button>
+</form>
 </body>
 </html>
