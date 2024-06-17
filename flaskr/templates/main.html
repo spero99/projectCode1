@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Pycompress</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         socket = io();
@@ -21,12 +21,12 @@
     </script>
 </head>
 <body>
-<h1>Hello world main
+<h1>Select file to send
 </h1>
 <?PHP
 echo shell_exec("python proxeiro.py 'parameter1' ");
 ?>
-<form method="post">
+<form method="POST" enctype=multipart/form-data>
   <label for="file">File</label>
   <input id="file" name="file" type="file" />
   <button>Upload</button>
