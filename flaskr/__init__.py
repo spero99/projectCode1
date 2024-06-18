@@ -1,13 +1,13 @@
 import os
 from flask_socketio import SocketIO, send , emit
-
+import compress
 from flask import Flask, render_template,flash,request,redirect, url_for
 
 
 def create_app(test_config=None):
     # create and configure the app
     UPLOAD_FOLDER = 'C:/test'
-    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+    ALLOWED_EXTENSIONS = {'txt'}
 
     app = Flask(__name__, instance_relative_config=True)
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -54,10 +54,11 @@ def create_app(test_config=None):
                 flash('No selected file')
                 return redirect(request.url)
             if file and allowed_file(file.filename):
-                #for now it saves the file
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
-
-                return render_template("main.html")
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], "data.txt"))
+                with open('C:/test/data.txt', 'r') as file:
+                    data = file.read().replace('\n', '')
+                compress.compressing(data)
+                socket.send(encoded_message)
 
         return
     @socket.on('message')
