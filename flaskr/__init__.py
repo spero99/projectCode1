@@ -58,7 +58,7 @@ def create_app(test_config=None):
                 with open('C:/test/data.txt', 'r') as file:
                     data = file.read().replace('\n', '')
                 compress.compressing(data)
-                socket.send(encoded_message)
+                socket.send("file compressed")
 
         return
     @socket.on('message')
