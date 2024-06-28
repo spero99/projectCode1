@@ -9,9 +9,6 @@ def symProb(String):
     sc = dict(Counter(String.upper()));
     return {k: v / sum(sc.values()) for k, v in sc.items()}
 
-
-
-
 def compressing(string):
     def best_partition(initial, final):
         pts = []  # points
@@ -20,7 +17,7 @@ def compressing(string):
             pts.append((diff))
             # print(abs(sum(sv[initial:i])-sum(sv[i:final])),sv[initial:i],sv[i:final],i)
             # print("\n",[sum(sv[initial:i]),sum(sv[i:final])],"\n")
-        print(pts.index(min(pts)) + initial)
+        #print(pts.index(min(pts)) + initial)
 
         if pts.index(min(pts)) < initial:
             return pts.index(min(pts)) + initial;
@@ -45,10 +42,10 @@ def compressing(string):
     new_index = []
     stage = 1
     while current_index != []:
-        print("---", "stage:-", stage, "----");
-        print(sc);
+        #print("---", "stage:-", stage, "----");
+        #print(sc);
         new_index = [];
-        print(current_index)
+        #print(current_index)
         for index in current_index:
             if (index[1] - index[0]) == 2: sc[index[0]] = sc[index[0]] + '0'; sc[index[1] - 1] = sc[index[1] - 1] + '1';
 
@@ -59,14 +56,13 @@ def compressing(string):
                 new_index.append((index_ptr, index[1]));
                 down(index_ptr, index[1]);
             current_index = new_index
-        print("\n")
         stage = stage + 1
     # for last stage
     if current_index == []:
-        print("---", "stage:-", stage, "----");
-        print(sc);
+        #print("---", "stage:-", stage, "----");
+        #print(sc);
         new_index = [];
-        print(current_index)
+        #print(current_index)
 
     # In[9]:
 
@@ -117,7 +113,7 @@ def compressing(string):
             pts.append((diff))
             # print(abs(sum(sv[initial:i])-sum(sv[i:final])),sv[initial:i],sv[i:final],i)
             # print("\n",[sum(sv[initial:i]),sum(sv[i:final])],"\n")
-        print(pts.index(min(pts)) + initial)
+        #print(pts.index(min(pts)) + initial)
 
         if pts.index(min(pts)) < initial:
             return pts.index(min(pts)) + initial;
@@ -129,9 +125,9 @@ def compressing(string):
 
     def down(initial, final):
         for i in range(initial, final): sc[i] = sc[i] + '1'
+
+
     return encoded_message,entropy,avg_length
 
 
-#string1 = input("Enter the string:")
-#compress(string1)
 
