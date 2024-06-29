@@ -77,13 +77,11 @@ def compressing(string):
     df.head(len(sk))
 
     # # Encoded Message
-
     # In[11]:
-    encoded_message = ''.join(sc)
-    print("For message:-", string, "\nEncoded message is:-", encoded_message)
+    compressed_message = ''.join(sc)
+    print("For message:-", string, "\nEncoded message is:-", compressed_message)
 
     # # Entropy Calculation:-
-
     # In[12]:
 
     H = 0
@@ -127,7 +125,7 @@ def compressing(string):
         for i in range(initial, final): sc[i] = sc[i] + '1'
 
 
-    return encoded_message,entropy,avg_length
+    return compressed_message,entropy,avg_length
 
 
 

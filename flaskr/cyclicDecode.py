@@ -35,6 +35,7 @@ def encode_message(message, generator_polynomial):
 
 
 def decode_message(encoded_words, generator_polynomial):
+
     k = 4  # μήκος του μηνύματος
     decoded_message = []
     for word in encoded_words:
@@ -58,6 +59,8 @@ def main(message):
     # Αποκωδικοποίηση των κωδικοποιημένων λέξεων
     decoded_message = decode_message(encoded_words, generator_polynomial)
     print("Decoded Message: ", decoded_message)
+    if decoded_message == initial_message:
+        print("ok")
 
 
 # Παράδειγμα κλήσης της συνάρτησης main με ένα αρχικό μήνυμα

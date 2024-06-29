@@ -34,6 +34,15 @@ def encode_message(message, generator_polynomial):
     return encoded_words
 
 
+def decode_message(encoded_string, generator_polynomial):
+    encoded_words = [encoded_string[i:i+7] for i in range(0, len(encoded_string), 7)]
+    print(encoded_words)
+    k = 4  # μήκος του μηνύματος
+    decoded_message = []
+    for word in encoded_words:
+        decoded_message.append(word[:k])  # Παίρνουμε τα πρώτα k bits ως το αρχικό μήνυμα
+    return ''.join(decoded_message)
+
 # Κύρια συνάρτηση που δέχεται το μήνυμα ως επιχείρημα
 def main(message):
     # Πολυώνυμο γεννήτορας CRC-3 (x^3 + x + 1 -> '1011')
@@ -47,9 +56,18 @@ def main(message):
 
     #θα αλλαξει για να μεινει string
     print("Encoded Words with CRC-3 (7 bits each): ")
+    encoded_string= ""
     for word in encoded_words:
         print(word)
+        encoded_string =encoded_string + word
+    print(encoded_string)
 
+    decoded_message = decode_message(encoded_string, generator_polynomial)
+    print("Decoded Message: ", decoded_message)
+    if decoded_message == message:
+        print("allgood")
+    else:
+        print("there was a problem")
 
 # Παράδειγμα κλήσης της συνάρτησης main με ένα αρχικό μήνυμα
 initial_message = "1001001111101101010010110011"
