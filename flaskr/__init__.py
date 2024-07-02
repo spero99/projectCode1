@@ -213,10 +213,6 @@ def create_app(test_config=None):
 
         # In[10]:
 
-        #data = {'Symbol': sk, 'probability': sv, 'codeword': sc, }
-        #df = pd.DataFrame(data)
-        #df.head(len(sk))
-
         # # Compressed Message
         # In[11]:
         compressed_message = ''.join(sc)
@@ -228,7 +224,7 @@ def create_app(test_config=None):
         H = 0
         for i in range(0, len(sv)): H = H + sv[i] * math.log((1 / sv[i]), 2);
         entropy = H
-        #print("Entropy is:-", H, "bits/message")
+
 
         # # Average Codeword Length
         # In[13]:
@@ -249,10 +245,6 @@ def create_app(test_config=None):
             for i in range(initial + 1, final):
                 diff = abs(sum(sv[initial:i]) - sum(sv[i:final]))
                 pts.append((diff))
-                # print(abs(sum(sv[initial:i])-sum(sv[i:final])),sv[initial:i],sv[i:final],i)
-                # print("\n",[sum(sv[initial:i]),sum(sv[i:final])],"\n")
-            # print(pts.index(min(pts)) + initial)
-
             if pts.index(min(pts)) < initial:
                 return pts.index(min(pts)) + initial;
             else:

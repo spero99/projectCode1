@@ -1,69 +1,47 @@
-def construct_generator_matrix(generator_polynomial):
-    k = 4  # μήκος του μηνύματος
-    n = len(generator_polynomial) + k - 1  # μήκος της κωδικοποιημένης λέξης
 
-    # Κατασκευή της μήτρας γεννήτορας
-    G = [[0] * n for _ in range(k)]
+def construct_generator_matrix(generator_polynomial, k):
+    n = k + len(generator_polynomial) - 1
+    G = []
     for i in range(k):
-        for j in range(len(generator_polynomial)):
-            G[i][i + j] = generator_polynomial[j]
-
+        row = [0] * i + generator_polynomial + [0] * (n - len(generator_polynomial) - i + 1)
+        G.append(row[:n])
     return G
 
+def divide_polynomials(dividend, divisor):
+    remainder = dividend[:]
+    for i in range(len(dividend) - len(divisor) + 1):
+        if remainder[i] == 1:
+            for j in range(len(divisor)):
+                remainder[i + j] ^= divisor[j]
+    return remainder[-(len(divisor)-1):]
 
-def multiply_matrices(message_vector, G):
-    codeword = [0] * len(G[0])
-    for i in range(len(message_vector)):
-        if message_vector[i] == 1:
-            for j in range(len(G[i])):
-                codeword[j] = (codeword[j] + G[i][j]) % 2
-    return codeword
+def decode_message(encoded_words):
+    generator_polynomial = [1, 1, 0, 1]  # G(x) = x^3 + x + 1
+    k = 4  # Size of each original word in bits
+    n = k + len(generator_polynomial) - 1  # Size of each encoded word
 
+    original_words = []
+    for encoded_word in encoded_words:
+        # Extract the first k bits of the encoded word
+        original_word = encoded_word[:k]
+        # Check for errors using the generator polynomial
+        remainder = divide_polynomials(encoded_word, generator_polynomial)
+        has_error = any(remainder)
+        original_words.append(original_word)
+        print(f"Encoded word: {''.join(map(str, encoded_word))} -> Original word: {''.join(map(str, original_word))} -> Error: {'Yes' if has_error else 'No'}")
 
-def encode_message(message, generator_polynomial):
-    G = construct_generator_matrix(generator_polynomial)
-    k = len(G)  # Αριθμός γραμμών στη μήτρα G
-    encoded_words = []
-    for i in range(0, len(message), k):
-        chunk = message[i:i + k]
-        if len(chunk) < k:
-            chunk = chunk.ljust(k, '0')  # pad with zeros if needed
-        message_vector = [int(bit) for bit in chunk]
-        codeword = multiply_matrices(message_vector, G)
-        encoded_words.append(''.join(map(str, codeword)))
-    return encoded_words
+    return original_words
 
+#Example usage:
 
-def decode_message(encoded_words, generator_polynomial):
-
-    k = 4  # μήκος του μηνύματος
-    decoded_message = []
-    for word in encoded_words:
-        decoded_message.append(word[:k])  # Παίρνουμε τα πρώτα k bits ως το αρχικό μήνυμα
-    return ''.join(decoded_message)
-
-
-def main(message):
-    # Πολυώνυμο γεννήτορας CRC-3 (x^3 + x + 1 -> '1011')
-    generator_polynomial = [1, 0, 1, 1]
-
-    # Κωδικοποίηση του μηνύματος σε λέξεις μήκους 7
-    encoded_words = encode_message(message, generator_polynomial)
-
-    # Εκτύπωση των αποτελεσμάτων
-    print("Original Message: ", message)
-    print("Encoded Words with CRC-3 (7 bits each): ")
-    for word in encoded_words:
-        print(word)
-
-    # Αποκωδικοποίηση των κωδικοποιημένων λέξεων
-    decoded_message = decode_message(encoded_words, generator_polynomial)
-    print("Decoded Message: ", decoded_message)
-    if decoded_message == initial_message:
-        print("ok")
-
-
-# Παράδειγμα κλήσης της συνάρτησης main με ένα αρχικό μήνυμα
-initial_message = "1001001111101101010010110011"
-
-main(initial_message)
+encoded_words = [
+    [1, 0, 0, 1, 0, 1, 1],
+    [1, 0, 1, 1, 0, 1, 0],
+    [0, 1, 1, 0, 0, 1, 0],
+    [1, 1, 0, 1, 0, 0, 0],
+    [1, 1, 0, 0, 0, 1, 1],
+    [0, 0, 1, 1, 1, 0, 0],
+    [1, 0, 1, 1, 0, 1, 0]
+]  # Encoded words from ENC_3
+decoded_message = decode_message(encoded_words)
+print("\nDecoded Message: ", [''.join(map(str, word)) for word in decoded_message])
