@@ -70,21 +70,16 @@ def create_app(test_config=None):
                 compressed_entropy = compressed_data[2]
                 encoded_message = encode_message(compressed_message) #encoding of the data
                 encoded_message_with_error = simulateError(encoded_message) #simulation of errors by noise during transmission
-                hashed_message = hash(encoded_message_with_error)
+                #encode to base 64
+                hashed_message = hash(compressed_message) # sha 256 ΠΡΙΝ ΤΟ ENCODE
                 write_Json(encoded_message_with_error,"5%",hashed_message, compressed_entropy) #creation of Json
                 decoded_message = decode_message(encoded_message_with_error) #decoding of the
-
-        return
-
-
-    @socket.on('message')
-    def handle_message(msg):
-        socket.send("test")
+                hashed_decoded_message = hash(decoded_message)
+                if hashed_decoded_message == hashed_message:
+                    print("allgood")
+        return render_template("main.html")
 
 
-    @socket.on('receive_file')
-    def handle_file(file):
-        socket.send("testfile")
 
     @socket.on('receive_json')
     def handle_the_json(json):
@@ -256,7 +251,7 @@ def create_app(test_config=None):
         def down(initial, final):
             for i in range(initial, final): sc[i] = sc[i] + '1'
 
-        return compressed_message, entropy, avg_length
+        return compressed_message, entropy
 
     def simulateError(encoded_string):
         string_length = len(encoded_string)
