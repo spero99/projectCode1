@@ -53,6 +53,7 @@ def create_app(test_config=None):
             if 'file' not in request.files:
                 flash('No file part')
                 return redirect(request.url)
+            error = int( request.form.get("error"))
             file = request.files['file']
             # if user does not select file, browser also
             # submit an empty part without filename
@@ -69,9 +70,9 @@ def create_app(test_config=None):
                 compressed_message = compressed_data[0]
                 compressed_entropy = compressed_data[1]
                 encoded_message = encode_message(compressed_message) #encoding of the data
-                encoded_message_with_error = simulateError(encoded_message) #simulation of errors by noise during transmission
+                encoded_message_with_error = simulateError(encoded_message,error) #simulation of errors by noise during transmission
                 based_message = encode_to_base64(encoded_message_with_error)#encode to base 64
-
+                debased_message = decode_to_base64((based_message))
                 #hashed_message = hash(compressed_message) # sha 256 ΠΡΙΝ ΤΟ ENCODE
                 write_Json(encoded_message_with_error,"5%",based_message, compressed_entropy) #creation of Json
 
@@ -81,6 +82,10 @@ def create_app(test_config=None):
                 page_data = [{'original': data,
                               'compressed': compressed_message,
                               'compressed_entropy':compressed_entropy,
+                              'encoded': encoded_message,
+                              'based64': based_message,
+                              'de_based64': debased_message,
+                              'error': error,
                               'received': encoded_message_with_error,
                               'decoded_message': decoded_message}
                              ]
@@ -161,11 +166,11 @@ def create_app(test_config=None):
             encoded_word = M[:k] + R
             encoded_word = ''.join(map(str,encoded_word))
             encoded_words.append(encoded_word)
-            encoded_string = ''.join(map(str, encoded_word))
+            encoded_string = ''.join(map(str, encoded_words))
             #print(f"\nMessage chunk: {chunk}")
             #print(f"Encoded word: {''.join(map(str, encoded_word))}")
 
-        return encoded_words
+        return encoded_string
     #-----------------------------------------------------------------------------------------------------------------------------
     #-------------------------------------------decode----------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------------------------------
@@ -175,7 +180,7 @@ def create_app(test_config=None):
         generator_polynomial = [1, 1, 0, 1]  # G(x) = x^3 + x + 1
         k = 4  # Size of each original word in bits
         n = k + len(generator_polynomial) - 1  # Size of each encoded word
-
+        errors = 0
         original_words = []
         for encoded_word in encoded_words:
             # Extract the first k bits of the encoded word
@@ -298,9 +303,9 @@ def create_app(test_config=None):
 
 #-----------------------------------------error simulation/hash/json------------------------------------------------
 
-    def simulateError(encoded_string):
+    def simulateError(encoded_string,error):
         string_length = len(encoded_string)
-        changed_bits = string_length * 5 // 100 # 5% error on sent simulation
+        changed_bits = string_length * error // 100 # 5% error on sent simulation
         encoded_list = [i for i in encoded_string]
         affected_bits = () #not in use
         for i in range(changed_bits):

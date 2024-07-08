@@ -29,9 +29,13 @@ with fano shanon (thne hashed) encoded with crc- 3 cyclic code for error correct
 
 <ul>
 {% for item in data %}
-    <p>original:{{item.original}}</p>
+    <p>original  :{{item.original}}</p>
     <p>compressed:{{item.compressed}}</p>
     <p>entropy:{{item.compressed_entropy}}</p>
+    <p>encoded:{{item.encoded}}</p>
+    <p>based64:{{item.based64}}</p>
+    <p>debased:{{item.de_based64}}</p>
+    <p>errorin%:{{item.error}}</p>
     <p>received:{{item.received}}</p>
     <p>decoded:{{item.decoded_message}}</p>
 {% endfor %}
