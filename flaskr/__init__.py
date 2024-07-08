@@ -79,7 +79,7 @@ def create_app(test_config=None):
 
                 #hashed_decoded_message = hash(decoded_message)
                 page_data = [{'original': data,
-                              'compressed': compressed_data,
+                              'compressed': compressed_message,
                               'compressed_entropy':compressed_entropy,
                               'received': encoded_message_with_error,
                               'decoded_message': decoded_message}
@@ -170,7 +170,8 @@ def create_app(test_config=None):
     #-------------------------------------------decode----------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------------------------------
 
-    def decode_message(encoded_words):
+    def decode_message(encoded_string):
+        encoded_words = [encoded_string[i:i+7] for i in range(0, len(encoded_string), 7)]
         generator_polynomial = [1, 1, 0, 1]  # G(x) = x^3 + x + 1
         k = 4  # Size of each original word in bits
         n = k + len(generator_polynomial) - 1  # Size of each encoded word
