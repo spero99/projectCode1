@@ -66,18 +66,25 @@ def create_app(test_config=None):
                 #compress.compressing(data)
                 #socket.send(encoded_message)
                 compressed_data = compressing(data) #Compression of the data
-                compressed_message = compressed_data[1]
-                compressed_entropy = compressed_data[2]
+                compressed_message = compressed_data[0]
+                compressed_entropy = compressed_data[1]
                 encoded_message = encode_message(compressed_message) #encoding of the data
                 encoded_message_with_error = simulateError(encoded_message) #simulation of errors by noise during transmission
-                #encode to base 64
-                hashed_message = hash(compressed_message) # sha 256 ΠΡΙΝ ΤΟ ENCODE
-                write_Json(encoded_message_with_error,"5%",hashed_message, compressed_entropy) #creation of Json
+                based_message = encode_to_base64(encoded_message_with_error)#encode to base 64
+
+                #hashed_message = hash(compressed_message) # sha 256 ΠΡΙΝ ΤΟ ENCODE
+                write_Json(encoded_message_with_error,"5%",based_message, compressed_entropy) #creation of Json
+
                 decoded_message = decode_message(encoded_message_with_error) #decoding of the
-                hashed_decoded_message = hash(decoded_message)
-                if hashed_decoded_message == hashed_message:
-                    print("allgood")
-        return render_template("main.html")
+
+                #hashed_decoded_message = hash(decoded_message)
+                page_data = [{'original': data,
+                              'compressed': compressed_data,
+                              'compressed_entropy':compressed_entropy,
+                              'received': encoded_message_with_error,
+                              'decoded_message': decoded_message}
+                             ]
+        return render_template("results.html", data= page_data)
 
 
 
@@ -152,6 +159,7 @@ def create_app(test_config=None):
             R = divide_polynomials(P, generator_polynomial)
             # Form the encoded word
             encoded_word = M[:k] + R
+            encoded_word = ''.join(map(str,encoded_word))
             encoded_words.append(encoded_word)
             encoded_string = ''.join(map(str, encoded_word))
             #print(f"\nMessage chunk: {chunk}")
@@ -174,8 +182,10 @@ def create_app(test_config=None):
             # Check for errors using the generator polynomial
             remainder = divide_polynomials(encoded_word, generator_polynomial)
             has_error = any(remainder)
-            original_words.append(original_word)
-            original_string = ''.join(map(str,original_word))
+            original_wordcombined = ''.join(map(str,original_word))
+
+            original_words.append(original_wordcombined)
+            original_string = ''.join(map(str,original_words))
             #print(f"Encoded word: {''.join(map(str, encoded_word))} -> Original word: {''.join(map(str, original_word))} -> Error: {'Yes' if has_error else 'No'}")
 
         return original_string
@@ -284,6 +294,8 @@ def create_app(test_config=None):
             for i in range(initial, final): sc[i] = sc[i] + '1'
 
         return compressed_message, entropy
+
+#-----------------------------------------error simulation/hash/json------------------------------------------------
 
     def simulateError(encoded_string):
         string_length = len(encoded_string)

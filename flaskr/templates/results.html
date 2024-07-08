@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Results</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        socket = io();
+        socket.connect('http://127.0.0.1:5000/');
+        socket.on('connect',function(){
+            socket.send('a');
+        })
+        socket.on('message', function(msg){
+            console.log(msg);
+
+        })
+        socket.on('send_file', function(file){
+            console.log('sending_file');
+        })
+
+    </script>
+</head>
+<body>
+
+<p>this was the original message which was sent to the server , it was compressed
+with fano shanon (thne hashed) encoded with crc- 3 cyclic code for error correction </p>
+
+
+<h1>decoded message</h1>
+<h1>errors corrected </h1>
+<ul>
+{% for item in data %}
+    <p>original:{{item.original}}</p>
+    <p>compressed:{{item.compressed}}</p>
+    <p>entropy:{{item.compressed_entropy}}</p>
+    <p>received:{{item.received}}</p>
+    <p>decoded:{{item.decoded_message}}</p>
+{% endfor %}
+</ul>
+
+<h1>hash from received file</h1>
+<h1>hash from decoded message</h1>
+
+</body>
+</html>
