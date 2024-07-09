@@ -1,3 +1,4 @@
+import collections
 import os
 import random
 import json
@@ -66,17 +67,17 @@ def create_app(test_config=None):
                     data = file.read().replace('\n', '')
                 #compress.compressing(data)
                 #socket.send(encoded_message)
-                compressed_data = compressing(data) #Compression of the data
+                compressed_data = compress(data) #Compression of the data
                 compressed_message = compressed_data[0]
-                compressed_entropy = compressed_data[1]
+                compressed_letter_binary = compressed_data[1]
+                compressed_entropy = compressed_data[2]
                 encoded_message = encode_message(compressed_message) #encoding of the data
                 encoded_message_with_error = simulateError(encoded_message,error) #simulation of errors by noise during transmission
                 based_message = encode_to_base64(encoded_message_with_error)#encode to base 64
                 debased_message = decode_to_base64((based_message))
-                #hashed_message = hash(compressed_message) # sha 256 ΠΡΙΝ ΤΟ ENCODE
-                write_Json(encoded_message_with_error,"5%",based_message, compressed_entropy) #creation of Json
-
-                decoded_message = decode_message(encoded_message_with_error) #decoding of the
+                write_Json(encoded_message_with_error,error,based_message, compressed_entropy) #creation of Json
+                decoded_message = decode_message(debased_message) #decoding of the
+                decompressed_message = decompress(decoded_message,compressed_letter_binary)
 
                 #hashed_decoded_message = hash(decoded_message)
                 page_data = [{'original': data,
@@ -87,8 +88,9 @@ def create_app(test_config=None):
                               'de_based64': debased_message,
                               'error': error,
                               'received': encoded_message_with_error,
-                              'decoded_message': decoded_message}
-                             ]
+                              'decoded_message': decoded_message,
+                              'decompressed_message': decompressed_message
+                              }]
         return render_template("results.html", data= page_data)
 
 
@@ -101,7 +103,7 @@ def create_app(test_config=None):
         socket.run(app)
 
     # ----------------------------------------------------------------------------------------------------------------------------------
-    # -------------------------------------------compress-------------------------------------------------------------------------------
+    # -------------------------------------------encode-------------------------------------------------------------------------------
     # ----------------------------------------------------------------------------------------------------------------------------------
 
     def construct_generator_matrix(generator_polynomial, k):
@@ -140,9 +142,6 @@ def create_app(test_config=None):
         k = 4  # Size of each word in the message
         n = k + len(generator_polynomial) - 1  # Size of each encoded word
 
-        #print("During the encoding process, we choose the following generator polynomial:")
-        #print("Generator Polynomial g(x):")
-        #print(format_polynomial(generator_polynomial))
 
         # Convert the message into chunks of k bits
         chunks = [message[i:i + k] for i in range(0, len(message), k)]
@@ -153,7 +152,7 @@ def create_app(test_config=None):
         #print("\nGenerator Matrix (G):")
         for row in G:
             print(row)
-
+        encoded_string = ""
         encoded_words = []
         for chunk in chunks:
             # Convert chunk to a polynomial (list of coefficients)
@@ -167,8 +166,7 @@ def create_app(test_config=None):
             encoded_word = ''.join(map(str,encoded_word))
             encoded_words.append(encoded_word)
             encoded_string = ''.join(map(str, encoded_words))
-            #print(f"\nMessage chunk: {chunk}")
-            #print(f"Encoded word: {''.join(map(str, encoded_word))}")
+
 
         return encoded_string
     #-----------------------------------------------------------------------------------------------------------------------------
@@ -181,6 +179,7 @@ def create_app(test_config=None):
         k = 4  # Size of each original word in bits
         n = k + len(generator_polynomial) - 1  # Size of each encoded word
         errors = 0
+        original_string = ""
         original_words = []
         for encoded_word in encoded_words:
             # Extract the first k bits of the encoded word
@@ -191,8 +190,8 @@ def create_app(test_config=None):
             original_wordcombined = ''.join(map(str,original_word))
 
             original_words.append(original_wordcombined)
-            original_string = ''.join(map(str,original_words))
-            #print(f"Encoded word: {''.join(map(str, encoded_word))} -> Original word: {''.join(map(str, original_word))} -> Error: {'Yes' if has_error else 'No'}")
+            original_string = ''.join(map(str, original_words))
+            original_string = ''.join(map(str, original_string))
 
         return original_string
 
@@ -201,107 +200,91 @@ def create_app(test_config=None):
     #----------------------------------------------------------------------------------------------------------------------------------
 
     def symProb(String):
-        sc = dict(Counter(String.upper()));
+        sc = dict(collections.Counter(String.upper()));
         return {k: v / sum(sc.values()) for k, v in sc.items()}
 
-    def compressing(string):
-        def best_partition(initial, final):
-            pts = []  # points
-            for i in range(initial + 1, final):
-                diff = abs(sum(sv[initial:i]) - sum(sv[i:final]))
-                pts.append((diff))
-            if pts.index(min(pts)) < initial:
-                return pts.index(min(pts)) + initial;
-            else:
-                return pts.index(min(pts))
+    c = {}
+    def create_list(message):
+        list = dict(collections.Counter(message))
+        #for key, value in list.items():
+            #print(key, ' : ', value)  # creating the sorted list according to the probablity
+        list_sorted = sorted(iter(list.items()), key=lambda k_v: (k_v[1], k_v[0]), reverse=True)
+        final_list = []
+        for key, value in list_sorted:
+            final_list.append([key, value, ''])
+        return final_list
 
-        def up(initial, final):
-            for i in range(initial, final): sc[i] = sc[i] + '0'
+    def divide_list(list):
+        if len(list) == 2:
+            # print([list[0]],[list[1]])               #printing merged pathways
+            return [list[0]], [list[1]]
+        else:
+            n = 0
+            for i in list:
+                n += i[1]
+            x = 0
+            distance = abs(2 * x - n)
+            j = 0
+            for i in range(len(list)):  # shannon tree structure
+                x += list[i][1]
+                if distance < abs(2 * x - n):
+                    j = i
+        # print(list[0:j+1], list[j+1:])               #printing merged pathways
+        return list[0:j + 1], list[j + 1:]
 
-        def down(initial, final):
-            for i in range(initial, final): sc[i] = sc[i] + '1'
+    def label_list(list):
+        list1, list2 = divide_list(list)
+        for i in list1:
+            i[2] += '0'
+            c[i[0]] = i[2]
+        for i in list2:
+            i[2] += '1'
+            c[i[0]] = i[2]
+        if len(list1) == 1 and len(list2) == 1:  # assigning values to the tree
+            return
+        label_list(list2)
+        return c
 
-        symd = symProb(string)  # symd-symbols Dictionary
-        symdn = OrderedDict(sorted(symd.items(), key=lambda kv: kv[1], reverse=True))
+    def compress(data):
+        symd = symProb(data)  # symd-symbols Dictionary
+        symdn = collections.OrderedDict(sorted(symd.items(), key=lambda kv: kv[1], reverse=True))
         sk = list(symdn.keys())
         sv = list(symdn.values())
 
-        initial = 0
-        final = len(sv)
-        sc = [''] * (len(sv))
-        current_index = [(initial, final)]
-        new_index = []
-        stage = 1
-        while current_index != []:
-            new_index = [];
-            for index in current_index:
-                if (index[1] - index[0]) == 2: sc[index[0]] = sc[index[0]] + '0'; sc[index[1] - 1] = sc[index[
-                                                                                                            1] - 1] + '1';
+        code = label_list(create_list(data))
+        letter_binary = []
+        compressed_string = ""
+        for key, value in code.items():
+            letter_binary.append([key, value])
 
-                if (index[1] - index[0]) > 2:
-                    index_ptr = best_partition(index[0], index[1]) + 1;
-                    new_index.append((index[0], index_ptr));
-                    up(index[0], index_ptr);
-                    new_index.append((index_ptr, index[1]));
-                    down(index_ptr, index[1]);
-                current_index = new_index
-            stage = stage + 1
-
-
-        # In[9]:
-
-        dummy = []
-        for i in range(0, len(sv)): dummy.append((sk[i], sc[i]));
-        encoded_dictionary = OrderedDict(dummy)
-
-        # In[10]:
-
-        # # Compressed Message
-        # In[11]:
-        compressed_message = ''.join(sc)
-        #print("For message:-", string, "\message is:-", compressed_message)
-
-        # # Entropy Calculation:-
-        # In[12]:
+        for a in data:
+            for key, value in code.items():
+                if key in a:
+                    compressed_string = compressed_string + value
 
         H = 0
         for i in range(0, len(sv)): H = H + sv[i] * math.log((1 / sv[i]), 2);
         entropy = H
 
+        return compressed_string, letter_binary, entropy
 
-        # # Average Codeword Length
-        # In[13]:
+    def decompress(string, letter_binary):
+        bitstring = ""
+        for digit in string:
+            bitstring = bitstring + digit
+        uncompressed_string = ""
+        code = ""
+        for digit in bitstring:
+            code = code + digit
+            pos = 0
+            for letter in letter_binary:  # decoding the binary and genrating original data
+                if code == letter[1]:
+                    uncompressed_string = uncompressed_string + letter_binary[pos][0]
+                    code = ""
+                pos += 1
+        return uncompressed_string
 
-        L = 0
-        for i in range(0, len(sc)): L = L + len(sc[i]) * sv[i];
-        avg_length = L
-        #print("Average Codeword length is:-", L, "bits/message")
-
-        # # Compression
-        # In[14]:
-
-        code_efficiency = (H / L) * 100
-        #print("Coding efficiency is :-", (H / L) * 100)
-
-        def best_partition(initial, final):
-            pts = []  # points
-            for i in range(initial + 1, final):
-                diff = abs(sum(sv[initial:i]) - sum(sv[i:final]))
-                pts.append((diff))
-            if pts.index(min(pts)) < initial:
-                return pts.index(min(pts)) + initial;
-            else:
-                return pts.index(min(pts))
-
-        def up(initial, final):
-            for i in range(initial, final): sc[i] = sc[i] + '0'
-
-        def down(initial, final):
-            for i in range(initial, final): sc[i] = sc[i] + '1'
-
-        return compressed_message, entropy
-
-#-----------------------------------------error simulation/hash/json------------------------------------------------
+    #-----------------------------------------error simulation/hash/json------------------------------------------------
 
     def simulateError(encoded_string,error):
         string_length = len(encoded_string)

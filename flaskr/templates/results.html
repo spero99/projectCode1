@@ -22,8 +22,8 @@
 </head>
 <body>
 
-<p>this was the original message which was sent to the server , it was compressed
-with fano shanon (thne hashed) encoded with crc- 3 cyclic code for error correction </p>
+<p>the file was read  which was sent to the server , it was compressed
+with fano shanon (thne hashed) encoded with crc- 3 cyclic code for error correction , the erro was given by the user </p>
 
 
 
@@ -38,6 +38,7 @@ with fano shanon (thne hashed) encoded with crc- 3 cyclic code for error correct
     <p>errorin%:{{item.error}}</p>
     <p>received:{{item.received}}</p>
     <p>decoded:{{item.decoded_message}}</p>
+    <p>decompressed:{{item.decompressed_message}}</p>
 {% endfor %}
 </ul>
 
