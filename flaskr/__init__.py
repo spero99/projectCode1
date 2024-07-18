@@ -76,7 +76,9 @@ def create_app(test_config=None):
                 based_message = encode_to_base64(encoded_message_with_error)#encode to base 64
                 debased_message = decode_to_base64((based_message))
                 write_Json(encoded_message_with_error,error,based_message, compressed_entropy) #creation of Json
-                decoded_message = decode_message(debased_message) #decoding of the
+                decoded_data = decode_message(debased_message) #decoding of the
+                decoded_message = decoded_data[0]
+                decoded_errors = decoded_data[1]
                 decompressed_message = decompress(decoded_message,compressed_letter_binary)
 
                 #hashed_decoded_message = hash(decoded_message)
@@ -89,6 +91,7 @@ def create_app(test_config=None):
                               'error': error,
                               'received': encoded_message_with_error,
                               'decoded_message': decoded_message,
+                              'decoded_errors': decoded_errors,
                               'decompressed_message': decompressed_message
                               }]
         return render_template("results.html", data= page_data)
@@ -163,22 +166,24 @@ def create_app(test_config=None):
             R = divide_polynomials(P, generator_polynomial)
             # Form the encoded word
             encoded_word = M[:k] + R
-            encoded_word = ''.join(map(str,encoded_word))
             encoded_words.append(encoded_word)
-            encoded_string = ''.join(map(str, encoded_words))
 
-
+            encoded_string = ""
+        for word in encoded_words:
+            encoded_string = encoded_string + ''.join(map(str, word))
         return encoded_string
+
     #-----------------------------------------------------------------------------------------------------------------------------
     #-------------------------------------------decode----------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------------------------------
 
     def decode_message(encoded_string):
-        encoded_words = [encoded_string[i:i+7] for i in range(0, len(encoded_string), 7)]
+        encoded_words =  [list(map(str, encoded_string[i:i + 7])) for i in range(0, len(encoded_string), 7)]
+
         generator_polynomial = [1, 1, 0, 1]  # G(x) = x^3 + x + 1
         k = 4  # Size of each original word in bits
         n = k + len(generator_polynomial) - 1  # Size of each encoded word
-        errors = 0
+        counter = 0
         original_string = ""
         original_words = []
         for encoded_word in encoded_words:
@@ -187,13 +192,12 @@ def create_app(test_config=None):
             # Check for errors using the generator polynomial
             remainder = divide_polynomials(encoded_word, generator_polynomial)
             has_error = any(remainder)
-            original_wordcombined = ''.join(map(str,original_word))
+            if has_error != 0:
+                counter = counter + 1
+            original_words.append(original_word)
+        original_string = ''.join([''.join(word) for word in original_words])
 
-            original_words.append(original_wordcombined)
-            original_string = ''.join(map(str, original_words))
-            original_string = ''.join(map(str, original_string))
-
-        return original_string
+        return original_string,counter
 
     #----------------------------------------------------------------------------------------------------------------------------------
     #-------------------------------------------compress-------------------------------------------------------------------------------

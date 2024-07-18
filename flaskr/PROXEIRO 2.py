@@ -15,15 +15,11 @@ def divide_polynomials(dividend, divisor):
                 remainder[i + j] ^= divisor[j]
     return remainder[-(len(divisor)-1):]
 
-def decode_message(encoded_string):
-    # divide encoded string to words
-    # encoded_words = [encoded_string[i:i + 7] for i in range(0, len(encoded_string), 7)]
-    encoded_words = [list(map(str, encoded_string[i:i + 7])) for i in range(0, len(encoded_string), 7)]
+def decode_message(encoded_words):
     generator_polynomial = [1, 1, 0, 1]  # G(x) = x^3 + x + 1
     k = 4  # Size of each original word in bits
     n = k + len(generator_polynomial) - 1  # Size of each encoded word
-    counter = 0
-    original_string= ''
+
     original_words = []
     for encoded_word in encoded_words:
         # Extract the first k bits of the encoded word
@@ -31,18 +27,24 @@ def decode_message(encoded_string):
         # Check for errors using the generator polynomial
         remainder = divide_polynomials(encoded_word, generator_polynomial)
         has_error = any(remainder)
-        if has_error != 0:
-            counter = counter + 1
         original_words.append(original_word)
-    for word in original_words:
-        original_string = original_string + ''.join(map(str, original_word))
-    print(original_string)
-    return original_string,counter
+        print(f"Encoded word: {''.join(map(str, encoded_word))} -> Original word: {''.join(map(str, original_word))} -> Error: {'Yes' if has_error else 'No'}")
 
-encoded_string = "100101100110101110010110100001001110111000011010"
-decoded_message = decode_message(encoded_string)
-#decoded_message = decode_message(encoded_words)
-print(decoded_message)
+    return original_words
+
+
+encoded_words = [
+    [1, 0, 0, 1, 0, 1, 1],
+    [0, 0, 1, 1, 0, 1, 0],
+    [1, 1, 1, 0, 0, 1, 0],
+    [1, 1, 0, 1, 0, 0, 0],
+    [0, 1, 0, 0, 0, 1, 1],
+    [1, 0, 1, 1, 1, 0, 0],
+    [0, 0, 1, 1, 0, 1, 0]
+]  # Encoded words from ENC_3
+
+decoded_message = decode_message(encoded_words)
+print("\nDecoded Message: ", [''.join(map(str, word)) for word in decoded_message])
 
 import random
 
@@ -59,8 +61,8 @@ def alter_bits(encoded_words, percentage):
         for index in indices_to_alter:
             altered_word[index] = 1 if altered_word[index] == 0 else 0
 
-        altered_words.append(altered_word)
-        #print(f"Original word: {''.join(map(str, encoded_word))} -> Altered word: {''.join(map(str, altered_word))} -> Altered positions: {indices_to_alter}")
+        altered_words.append((altered_word, indices_to_alter))
+        print(f"Original word: {''.join(map(str, encoded_word))} -> Altered word: {''.join(map(str, altered_word))} -> Altered positions: {indices_to_alter}")
 
     return altered_words
 
@@ -75,7 +77,20 @@ encoded_words = [
     [0, 0, 1, 1, 0, 1, 0]
 ]  # Encoded words from ENC_3
 
+encoded_string = ""
+for word in encoded_words:
+    encoded_string = encoded_string + ''.join(map(str, word))
+print(encoded_string)
+
+
+encoded_words2 = [encoded_string[i:i + 7] for i in range(0, len(encoded_string), 7)]
+print(encoded_words2)
 percentage = 20  # Percentage of bits to alter
 altered_words = alter_bits(encoded_words, percentage)
 
+#print("\nList of Altered Words with Altered Positions:")
+#for word, altered_positions in altered_words:
+ #   print(f"Altered word: {''.join(map(str, word))}, Altered positions: {altered_positions}")
 
+print("DECODED WITH ERRORS")
+decoded2 = decode_message(altered_words)

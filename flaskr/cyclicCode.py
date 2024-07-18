@@ -1,4 +1,5 @@
 
+
 def construct_generator_matrix(generator_polynomial, k):
     # Construct the generator matrix
     n = k + len(generator_polynomial) - 1
@@ -35,19 +36,13 @@ def encode_message(message):
     k = 4  # Size of each word in the message
     n = k + len(generator_polynomial) - 1  # Size of each encoded word
 
-    print("During the encoding process, we choose the following generator polynomial:")
-    print("Generator Polynomial g(x):")
-    print(format_polynomial(generator_polynomial))
-
     # Convert the message into chunks of k bits
     chunks = [message[i:i+k] for i in range(0, len(message), k)]
 
     # Construct the generator matrix
     G = construct_generator_matrix(generator_polynomial, k)
 
-    print("\nGenerator Matrix (G):")
-    for row in G:
-        print(row)
+
 
     encoded_words = []
     for chunk in chunks:
@@ -60,16 +55,19 @@ def encode_message(message):
         # Form the encoded word
         encoded_word = M[:k] + R
         encoded_words.append(encoded_word)
-        print(f"\nMessage chunk: {chunk}")
-        print(f"Encoded word: {''.join(map(str, encoded_word))}")
 
-    return encoded_words
+        encoded_string = ""
+        for word in encoded_words:
+            encoded_string = encoded_string + ''.join(map(str, word))
+
+
+
+    return encoded_string
+
 
 # Example usage:
-message = "1001001111101101010010110011"  # Original message
+message = "1011111011111111011110011111111011110011111100101111111111110111101001111111111101110111111100111111111101111111111111010111110111011001111111111011111110111011111111111111101111111111110111111111010011111111111111011111111010111110011111111111011111101101110011110111110111111011011011101100111111011011111111111111110011111111101111111011111111101111111111111111111111111111111111100"  # Original message
 encoded_words = encode_message(message)
+print(encoded_words)
 
-# Print the list of encoded words
-print("\nList of Encoded Words:")
-for word in encoded_words:
-    print(''.join(map(str, word)))
+#1001011001101011100101101000010001110111000011010

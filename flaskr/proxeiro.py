@@ -88,6 +88,7 @@ def decompress(string,letter_binary):
         bitstring = bitstring + digit
     uncompressed_string =""
     code = ""
+
     for digit in bitstring:
         code = code+digit
         pos=0
