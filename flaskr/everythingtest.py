@@ -52,7 +52,7 @@ def encode_message(message):
     # Construct the generator matrix
     G = construct_generator_matrix(generator_polynomial, k)
 
-    # print("\nGenerator Matrix (G):")
+
 
     encoded_string = ""
     encoded_words = []
@@ -73,12 +73,20 @@ def encode_message(message):
     return encoded_string
 
 def decode_message(encoded_string):
-    encoded_words =[list(map(str, encoded_string[i:i + 7])) for i in range(0, len(encoded_string), 7)]
+    #print("length is "+ str(len(encoded_string)))
+    if len(encoded_string)%7 != 0 :
+        #print("if")
+        encoded_string = str(encoded_string) + "0"
+        #print("new length is " + str(len(encoded_string)))
+    encoded_words =[list(map(int, encoded_string[i:i + 7])) for i in range(0, len(encoded_string), 7)]
+    #for word in encoded_words:
+     #   print(len(word))
 
     generator_polynomial = [1, 1, 0, 1]  # G(x) = x^3 + x + 1
     k = 4  # Size of each original word in bits
     n = k + len(generator_polynomial) - 1  # Size of each encoded word
     counter = 0
+    string= ""
     original_string = ""
     original_words = []
     for encoded_word in encoded_words:
@@ -90,7 +98,11 @@ def decode_message(encoded_string):
         if has_error != 0:
             counter = counter + 1
         original_words.append(original_word)
-    original_string = ''.join([''.join(word) for word in original_words])
+    original_string = ''.join([''.join(str(word)) for word in original_words])
+    for word in original_words:
+        string = string + ''.join(map(str, word))
+    original_string = str(string)
+
 
     return original_string,counter
 
@@ -104,8 +116,7 @@ c = {}
 
 def create_list(message):
     list = dict(collections.Counter(message))
-    #for key, value in list.items():
-        #print(key, ' : ', value)  # creating the sorted list according to the probablity
+
     list_sorted = sorted(iter(list.items()), key=lambda k_v: (k_v[1], k_v[0]), reverse=True)
     final_list = []
     for key, value in list_sorted:
@@ -114,7 +125,7 @@ def create_list(message):
 
 def divide_list(list):
     if len(list) == 2:
-        # print([list[0]],[list[1]])               #printing merged pathways
+
         return [list[0]], [list[1]]
     else:
         n = 0
@@ -127,7 +138,7 @@ def divide_list(list):
             x += list[i][1]
             if distance < abs(2 * x - n):
                 j = i
-    # print(list[0:j+1], list[j+1:])               #printing merged pathways
+
     return list[0:j + 1], list[j + 1:]
 
 def label_list(list):
@@ -167,6 +178,7 @@ def compress(data):
     return compressed_string, letter_binary, entropy
 
 def decompress(string, letter_binary):
+
     bitstring = ""
     for digit in string:
             bitstring = bitstring + digit
@@ -183,24 +195,25 @@ def decompress(string, letter_binary):
     return uncompressed_string
 
 def simulateError(encoded_string,error):
-    string_length = len(encoded_string)
-    changed_bits = string_length * error // 100 # % error on sent simulation
-    print("#errors")
-    print(changed_bits)
-    encoded_string_with_error = "test"
-    changed_positions= random.sample(range(string_length), changed_bits)
-    print(changed_positions)
-    list_of_characters = [*encoded_string]
-    #print(list_of_characters)
-    for i in range(len(changed_positions)):
-        if list_of_characters[changed_positions[i]] == "0":
-            list_of_characters[changed_positions[i]] = "1"
-        else:
-            list_of_characters[changed_positions[i]] = "0"
-    encoded_string_with_error = ''.join(list_of_characters)
-    #print("check errors")
-    #print(encoded_string)
-    #print(encoded_string_with_error)
+    encoded_string_with_error = ""
+    if error == "0" :
+        encoded_string_with_error == encoded_string
+    else:
+        string_length = len(encoded_string)
+        changed_bits = string_length * error // 100 # % error on sent simulation
+
+
+        changed_positions= random.sample(range(string_length), changed_bits)
+
+        list_of_characters = [*encoded_string]
+
+        for i in range(len(changed_positions)):
+            if list_of_characters[changed_positions[i]] == "0":
+                list_of_characters[changed_positions[i]] = "1"
+            else:
+                list_of_characters[changed_positions[i]] = "0"
+        encoded_string_with_error = ''.join(list_of_characters)
+
 
     return encoded_string_with_error
 def encode_to_base64(string):
@@ -217,31 +230,59 @@ def decode_to_base64(string):
     return decoded64_string
 
 
-text="this is a test for python project with fano shannon and crc-3"
+text = "this is a test for python project with fano shannon and crc-3"
 error = 5
-
+print(text)
 compressed_data = compress(text)
+
 compressed_message = compressed_data[0]
+print("compressed message:" + compressed_message)
+
 compressed_letter_binary = compressed_data[1]
 compressed_entropy = compressed_data[2]
+#print(compressed_letter_binary)
+print ("test")
+decompress_test = decompress(compressed_message, compressed_letter_binary)
+print("decompressed test:" + decompress_test)
+
 encoded_message = encode_message(compressed_message) #encoding of the data
-#encoded_message_with_error = simulateError(encoded_message,error) #simulation of errors by noise during transmission
-#based_message = encode_to_base64(encoded_message_with_error)#encode to base 64
-#debased_message = decode_to_base64((based_message))
-#decoded_data = decode_message(debased_message) #decoding of the
-decoded_data = decode_message(encoded_message) #decoding of the
+print("encoded message:" + encoded_message)
+
+encoded_message_with_error = simulateError(encoded_message,error) #simulation of errors by noise during transmission
+print("encoded message with error:" + encoded_message_with_error)
+
+
+based_message = encode_to_base64(encoded_message_with_error)#encode to base 64
+print("based:" + based_message)
+debased_message = decode_to_base64((based_message))
+print("debased:" + debased_message)
+
+
+decoded_data = decode_message(debased_message) #decoding of the
+#decoded_data = decode_message(encoded_message) #decoding of the
+
 decoded_message = decoded_data[0]
 decoded_errors = decoded_data[1]
+print("decode message:" + decoded_message)
+
+
+print("decode errors:" + str(decoded_errors))
+
 decompressed_message = decompress(decoded_message,compressed_letter_binary)
+print("decompressed:" + decompressed_message)
 
-print("text:"+ text)
-print("compressed message:"+ compressed_message)
-print("encoded message:"+ encoded_message)
-print(len(encoded_message))
-#print("encoded message with error:" + encoded_message_with_error)
-#print("based:"+ based_message)
-#print("debased:"+ debased_message)
-print("decode message:"+ decoded_message)
-print("decode errors:"+ str(decoded_errors))
-print("decompressed:"+ decompressed_message)
 
+
+
+
+
+
+
+
+
+print(compressed_message)
+print(decoded_message)
+if encoded_message_with_error == debased_message:
+    print("yay")
+if  compressed_message == decompressed_message:
+    print("double yay")

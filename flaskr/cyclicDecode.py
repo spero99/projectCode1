@@ -18,12 +18,12 @@ def divide_polynomials(dividend, divisor):
 def decode_message(encoded_string):
     # divide encoded string to words
     # encoded_words = [encoded_string[i:i + 7] for i in range(0, len(encoded_string), 7)]
-    encoded_words = [list(map(str, encoded_string[i:i + 7])) for i in range(0, len(encoded_string), 7)]
+    encoded_words = [list(map(int, encoded_string[i:i + 7])) for i in range(0, len(encoded_string), 7)]
     generator_polynomial = [1, 1, 0, 1]  # G(x) = x^3 + x + 1
     k = 4  # Size of each original word in bits
     n = k + len(generator_polynomial) - 1  # Size of each encoded word
     counter = 0
-    original_string= ''
+    string = ''
     original_words = []
     for encoded_word in encoded_words:
         # Extract the first k bits of the encoded word
@@ -34,12 +34,15 @@ def decode_message(encoded_string):
         if has_error != 0:
             counter = counter + 1
         original_words.append(original_word)
+        print(f"Encoded word: {''.join(map(str, encoded_word))} -> Original word: {''.join(map(str, original_word))} -> Error: {'Yes' if has_error else 'No'}")
+
     for word in original_words:
-        original_string = original_string + ''.join(map(str, original_word))
+        string = string + ''.join(map(str, original_word))
+    original_string = str(string)
     print(original_string)
     return original_string,counter
 
-encoded_string = "100101100110101110010110100001001110111000011010"
+encoded_string = "101110011100101111111111111101110011001011111111111100101111111001101011111110010111111111111111111111111011100110100010111001111111111111110111001011100111111110011010111111111111110111001111111111111111101000011100111010001101000100101111111111111111101110011111111011100101110011111111111111111111110111001111111111111111010001111111111111101000111111111111111111111111101000111111111100101011100111001001110011111111111111101110011110010110100011001011111111011100111010001111111101110001101001110010110010111111111101000101110011111111111111111111111001011111111111111110111001111111101110011111111110010111111111111111111111111111111111111111111111111111111111110010"
 decoded_message = decode_message(encoded_string)
 #decoded_message = decode_message(encoded_words)
 print(decoded_message)
